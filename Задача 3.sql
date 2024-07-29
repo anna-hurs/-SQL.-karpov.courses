@@ -1,8 +1,7 @@
-Задача 3.
+/* Задача 3.
 Теперь предлагаем вам посмотреть на нашу аудиторию немного под другим углом — давайте посчитаем не просто всех пользователей, а именно ту часть, которая оформляет и оплачивает заказы в нашем сервисе. Заодно выясним, какую долю платящие пользователи составляют от их общего числа.
 
 Задание:
-
 Для каждого дня, представленного в таблицах user_actions и courier_actions, рассчитайте следующие показатели:
 
 Число платящих пользователей.
@@ -13,7 +12,7 @@
 
 Результат должен быть отсортирован по возрастанию даты. 
 
-Поля в результирующей таблице: date, paying_users, active_couriers, paying_users_share, active_couriers_share
+Поля в результирующей таблице: date, paying_users, active_couriers, paying_users_share, active_couriers_share */
 
 with paying_users as (SELECT time::date as date,
                              count(distinct user_id) filter (WHERE order_id not in (SELECT order_id
