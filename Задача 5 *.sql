@@ -1,4 +1,4 @@
-* Задача 5.
+/* Задача 5.*
 Продолжим изучать наш сервис и рассчитаем несколько показателей, связанных с заказами.
 
 Задание:
@@ -14,7 +14,7 @@
 
 Результат должен быть отсортирован по возрастанию даты.
 
-Поля в результирующей таблице: date, orders, first_orders, new_users_orders, first_orders_share, new_users_orders_share
+Поля в результирующей таблице: date, orders, first_orders, new_users_orders, first_orders_share, new_users_orders_share */
 
 with gen_order as (SELECT time::date as date,
                           count(distinct order_id) as orders
