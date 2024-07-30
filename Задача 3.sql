@@ -14,36 +14,37 @@
 
 Поля в результирующей таблице: date, paying_users, active_couriers, paying_users_share, active_couriers_share */
 
-with paying_users as (SELECT time::date as date,
-                             count(distinct user_id) filter (WHERE order_id not in (SELECT order_id
-                                                                             FROM   user_actions
-                                                                             WHERE  action = 'cancel_order')) as paying_users
-                      FROM   user_actions
-                      GROUP BY date), total_users as (SELECT date,
-                                       sum(count(user_id)) OVER (ORDER BY date)::integer as total_users
-                                FROM   (SELECT user_id,
-                                               min(time::date) as date
-                                        FROM   user_actions
-                                        GROUP BY user_id) t1
-                                GROUP BY date), active_couriers as (SELECT time::date as date,
-                                           count(distinct courier_id) as active_couriers
-                                    FROM   courier_actions
-                                    WHERE  order_id not in (SELECT order_id
-                                                            FROM   user_actions
-                                                            WHERE  action = 'cancel_order')
-                                    GROUP BY date), total_couriers as (SELECT date,
-                                          sum(count(courier_id)) OVER (ORDER BY date)::integer as total_couriers
-                                   FROM   (SELECT courier_id,
-                                                  min(time::date) as date
-                                           FROM   courier_actions
-                                           GROUP BY courier_id) t2
-                                   GROUP BY date)
-SELECT date,
-       paying_users,
-       active_couriers,
+with 
+paying_users as (SELECT time::date as date, 
+                        count(distinct user_id) filter (WHERE order_id not in (SELECT order_id
+                                                                               FROM   user_actions
+                                                                               WHERE  action = 'cancel_order')) as paying_users
+                 FROM   user_actions
+                 GROUP BY date), 
+
+total_users as (SELECT date, sum(count(user_id)) OVER (ORDER BY date)::integer as total_users
+                FROM   (SELECT user_id, min(time::date) as date
+                        FROM   user_actions
+                        GROUP BY user_id) t1
+                GROUP BY date), 
+
+active_couriers as (SELECT time::date as date, count(distinct courier_id) as active_couriers
+                    FROM   courier_actions
+                    WHERE  order_id not in (SELECT order_id
+                                            FROM   user_actions
+                                            WHERE  action = 'cancel_order')
+                    GROUP BY date), 
+  
+total_couriers as (SELECT date, sum(count(courier_id)) OVER (ORDER BY date)::integer as total_couriers
+                   FROM   (SELECT courier_id, min(time::date) as date
+                           FROM   courier_actions
+                           GROUP BY courier_id) t2
+                   GROUP BY date)
+
+SELECT date, paying_users, active_couriers,
        round((paying_users::decimal/total_users*100), 2) as paying_users_share,
        round((active_couriers::decimal/total_couriers*100), 2) as active_couriers_share
 FROM   paying_users
-    LEFT JOIN total_users using (date)
-    LEFT JOIN active_couriers using (date)
-    LEFT JOIN total_couriers using (date)
+LEFT JOIN total_users using (date)
+LEFT JOIN active_couriers using (date)
+LEFT JOIN total_couriers using (date)
