@@ -11,19 +11,20 @@
 Результирующая таблица должна быть отсортирована по возрастанию колонки с часом оформления заказа.
 Поля в результирующей таблице: hour, successful_orders, canceled_orders, cancel_rate */
 
-with hour_orders as (SELECT order_id,
-                            date_part('hour', creation_time)::integer as hour
-                     FROM   orders)
-SELECT hour,
+with 
+hour_orders as (SELECT order_id, date_part('hour', creation_time)::integer as hour
+                FROM   orders)
+
+SELECT hour, 
        count(order_id) filter (WHERE order_id not in (SELECT order_id
-                                               FROM   user_actions
-                                               WHERE  action = 'cancel_order')) as successful_orders, count(order_id) filter (
-WHERE  order_id in (SELECT order_id
-                    FROM   user_actions
-                    WHERE  action = 'cancel_order')) as canceled_orders, round((count(order_id) filter (
-WHERE  order_id in (SELECT order_id
-                    FROM   user_actions
-                    WHERE  action = 'cancel_order'))/count(order_id)::decimal), 3) as cancel_rate
+                                                      FROM   user_actions
+                                                      WHERE  action = 'cancel_order')) as successful_orders, 
+       count(order_id) filter (WHERE  order_id in (SELECT order_id
+                                                   FROM   user_actions
+                                                   WHERE  action = 'cancel_order')) as canceled_orders, 
+       round((count(order_id) filter (WHERE  order_id in (SELECT order_id
+                                                          FROM   user_actions
+                                                          WHERE  action = 'cancel_order'))/count(order_id)::decimal), 3) as cancel_rate
 FROM   hour_orders
 GROUP BY hour
 ORDER BY hour
