@@ -11,22 +11,25 @@
 
 Результирующая таблица должна быть отсортирована по возрастанию даты. Поля в результирующей таблице: date, users_per_courier, orders_per_courier */
 
-with paying_users_count_orders as (SELECT time::date as date,
-                                          count(distinct user_id) as paying_users,
-                                          count(distinct order_id) as orders
-                                   FROM   user_actions
-                                   WHERE  order_id not in (SELECT order_id
-                                                           FROM   user_actions
-                                                           WHERE  action = 'cancel_order')
-                                   GROUP BY date), active_couriers as (SELECT time::date as date,
-                                           count(distinct courier_id) as active_couriers
-                                    FROM   courier_actions
-                                    WHERE  order_id not in (SELECT order_id
-                                                            FROM   user_actions
-                                                            WHERE  action = 'cancel_order')
-                                    GROUP BY date)
+with 
+paying_users_count_orders as (SELECT time::date as date,
+                                     count(distinct user_id) as paying_users,
+                                     count(distinct order_id) as orders
+                              FROM   user_actions
+                              WHERE  order_id not in (SELECT order_id
+                                                      FROM   user_actions
+                                                      WHERE  action = 'cancel_order')
+                              GROUP BY date), 
+  
+active_couriers as (SELECT time::date as date, count(distinct courier_id) as active_couriers
+                    FROM   courier_actions
+                    WHERE  order_id not in (SELECT order_id
+                                            FROM   user_actions
+                                            WHERE  action = 'cancel_order')
+                    GROUP BY date)
+
 SELECT date,
        round((paying_users*1/active_couriers::decimal), 2) as users_per_courier,
        round((orders*1/active_couriers::decimal), 2) as orders_per_courier
 FROM   paying_users_count_orders
-    LEFT JOIN active_couriers using (date)
+LEFT JOIN active_couriers using (date)
